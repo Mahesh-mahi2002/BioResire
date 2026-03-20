@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#010812">
+<title>BioResire Hub</title>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --dir-bg:#010d1f;--dir-accent1:#00e5a0;--dir-accent2:#ff6b6b;--dir-accent3:#ffd93d;--dir-accent4:#6bcbff;
+  --dir-card:#0f2540;--dir-border:#1a3a5c;
+  --phd-bg:#060412;--phd-accent1:#c77dff;--phd-accent2:#48cae4;--phd-accent3:#fb8500;--phd-accent4:#70e000;
+  --phd-card:#0d1f3a;--phd-border:#162d4a;
+}
+body{font-family:'Ubuntu Mono','Courier New',monospace;background:#010a18;color:#fff;min-height:100vh;overflow-x:hidden}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#010a18;position:relative;overflow:hidden}
+#login-screen::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(0,100,255,0.10) 0%,transparent 70%);top:-200px;left:-150px;pointer-events:none}
+#login-screen::after{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(0,60,200,0.10) 0%,transparent 70%);bottom:-150px;right:-100px;pointer-events:none}
+.login-title{font-family:'Segoe UI',Ubuntu,sans-serif;font-size:13px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#8899bb;margin-bottom:12px}
+.login-logo{font-family:'Segoe UI',Ubuntu,sans-serif;font-size:42px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-1px}
+.login-logo span{color:#00e5a0}
+.login-sub{font-size:11px;color:#8899bb;margin-bottom:60px;letter-spacing:2px}
+.login-cards{display:flex;gap:16px;position:relative;z-index:1;flex-wrap:wrap;justify-content:center;padding:0 16px}
+.login-card{width:280px;border-radius:20px;padding:28px 24px;cursor:default;transition:transform 0.3s,box-shadow 0.3s;position:relative;overflow:hidden}
+.login-card::before{content:'';position:absolute;inset:0;border-radius:20px;padding:1.5px;-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.login-card.dir-card{background:linear-gradient(135deg,#060d1a 0%,#0a1830 100%)}
+.login-card.dir-card::before{background:linear-gradient(135deg,#3a8fff,#00c8ff)}
+.login-card.phd-card{background:linear-gradient(135deg,#060d1a 0%,#0c1535 100%)}
+.login-card.phd-card::before{background:linear-gradient(135deg,#c77dff,#48cae4)}
+.login-card.dir-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(0,100,255,0.25)}
+.login-card.phd-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(199,125,255,0.2)}
+.login-card-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:20px}
+.dir-card .login-card-icon{background:rgba(0,229,160,0.15)}
+.phd-card .login-card-icon{background:rgba(199,125,255,0.15)}
+.login-card-title{font-family:'Segoe UI',Ubuntu,sans-serif;font-size:20px;font-weight:800;color:#fff;margin-bottom:6px}
+.dir-card .login-card-title span{color:#00e5a0}
+.phd-card .login-card-title span{color:#c77dff}
+.login-card-desc{font-size:11px;color:#7a8fa8;line-height:1.7;margin-bottom:28px}
+.login-pin-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8899bb;margin-bottom:8px}
+.pin-dots{display:flex;gap:10px;margin-bottom:14px;justify-content:center}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid #333;transition:all 0.2s}
+.dir-card .pin-dot.filled{background:#00e5a0;border-color:#00e5a0}
+.phd-card .pin-dot.filled{background:#c77dff;border-color:#c77dff}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pin-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;color:#e8eeff;font-family:'Ubuntu Mono','Courier New',monospace;font-size:14px;padding:9px;cursor:pointer;transition:all 0.15s}
+.pin-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
+.pin-error{font-size:10px;color:#ff6b6b;text-align:center;margin-top:4px;min-height:14px}
+.pin-hint{font-size:10px;color:#8899bb;text-align:center;margin-top:6px}
+
+/* APP SHELL */
+#app{display:none;min-height:100vh}
+#dir-app{background:var(--dir-bg);min-height:100vh;display:none}
+#phd-app{background:var(--phd-bg);min-height:100vh;display:none}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid;position:sticky;top:0;z-index:100}
+.dir-app .topbar{background:rgba(7,16,31,0.95);border-color:var(--dir-border);backdrop-filter:blur(12px)}
+.phd-app .topbar{background:rgba(6,15,31,0.95);border-color:var(--phd-border);backdrop-filter:blur(12px)}
+.tb-brand{font-family:'Segoe UI',Ubuntu,sans-serif;font-size:16px;font-weight:800;display:flex;align-items:center;gap:10px}
+.tb-dot{width:8px;height:8px;border-radius:50%;animation:pulse 2s infinite}
+.dir-app .tb-dot{background:var(--dir-accent1)}
+.phd-app .tb-dot{background:var(--phd-accent1)}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.85)}}
+.tb-nav{display:flex;gap:4px}
+.tb-navbtn{padding:6px 16px;border-radius:8px;border:1px solid transparent;font-family:'Ubuntu Mono','Courier New',monospace;font-size:11px;cursor:pointer;background:transparent;color:#7a8fa8;letter-spacing:0.5px;transition:all 0.2s}
+.tb-navbtn:hover{color:#fff;background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.1)}
+.dir-app .tb-navbtn.active{color:var(--dir-accent1);border-color:rgba(0,229,160,0.3);background:rgba(0,229,160,0.07)}
+.phd-app .tb-navbtn.active{color:var(--phd-accent1);border-color:rgba(199,125,255,0.3);background:rgba(199,125,255,0.07)}
+.tb-right{display:flex;align-items:center;gap:10px}
+.tb-date{font-size:12px;letter-spacing:1px;color:#aaccee}
+.logout-btn{padding:6px 14px;border-radius:7px;font-size:10px;font-family:'Ubuntu Mono','Courier New',monospace;cursor:pointer;border:1px solid #333;background:transparent;color:#7a8fa8;letter-spacing:1px;transition:all 0.2s}
+.logout-btn:hover{border-color:#ff6b6b;color:#ff6b6b}
+.settings-btn{width:30px;height:30px;border-radius:8px;border:1px solid #333;background:transparent;color:#8899bb;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.settings-btn:hover{border-color:#888;color:#e8eeff}
+
+/* QUICK LINKS BAR */
+.qlink-bar{display:flex;align-items:center;gap:8px;padding:8px 28px;border-bottom:1px solid}
+.dir-app .qlink-bar{border-color:var(--dir-border);background:rgba(0,120,255,0.04)}
+.phd-app .qlink-bar{border-color:var(--phd-border);background:rgba(0,100,255,0.04)}
+.qlink-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#667799;margin-right:4px}
+.qlink-btn{display:flex;align-items:center;gap:5px;padding:5px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:#aaccee;font-family:'Ubuntu Mono','Courier New',monospace;font-size:10px;cursor:pointer;transition:all 0.2s;text-decoration:none;white-space:nowrap}
+.qlink-btn:hover{background:rgba(255,255,255,0.08);color:#e8eeff;border-color:rgba(255,255,255,0.15)}
+.qlink-btn .ql-icon{font-size:13px}
+
+/* PAGE */
+.page{display:none;padding:24px 28px;animation:fadein 0.3s ease}
+.page.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* SECTION HEADER */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sec-title{font-family:'Segoe UI',Ubuntu,sans-serif;font-size:26px;font-weight:800;color:#fff}
+.sec-sub{font-size:13px;color:#aaccee;margin-top:2px}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{border-radius:16px;padding:20px 22px;position:relative;overflow:hidden;border:1px solid;transition:transform 0.2s;animation:cardIn 0.4s ease both}
+.stat-card:hover{transform:translateY(-3px)}
+.stat-card:nth-child(1){animation-delay:0.05s}.stat-card:nth-child(2){animation-delay:0.1s}.stat-card:nth-child(3){animation-delay:0.15s}.stat-card:nth-child(4){animation-delay:0.2s}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.dir-app .stat-card{background:var(--dir-card);border-color:var(--dir-border)}
+.phd-app .stat-card{background:var(--phd-card);border-color:var(--phd-border)}
+.stat-card-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.stat-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#99bbdd;margin-bottom:10px}
+.stat-val{font-family:'Segoe UI',Ubuntu,sans-serif;font-size:36px;font-weight:800;color:#fff;line-height:1;margin-bottom:6px}
+.stat-tag{font-size:10px;padding:3px 9px;border-radius:5px;display:inline-block}
+
+/* GRID */
+.content-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.content-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:18px}
+
+/* CARD */
+.card{border-radius:16px;overflow:hidden;border:1px solid;margin-bottom:18px}
+.dir-app .card{background:var(--dir-card);border-color:var(--dir-border)}
+.phd-app .card{background:var(--phd-card);border-color:var(--phd-border)}
+.card-header{padding:14px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid}
+.dir-app .card-header{border-color:var(--dir-border)}
+.phd-app .card-header{border-color:var(--phd-border)}
+.card-title{font-family:'Segoe UI',Ubuntu,sans-serif;font-size:16px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.card-title-dot{width:8px;height:8px;border-radius:50%}
+.card-body{padding:16px 20px}
+.add-item-btn{font-size:10px;padding:5px 12px;border-radius:6px;border:1px dashed;background:transparent;font-family:'Ubuntu Mono','Courier New',monospace;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s}
+.dir-app .add-item-btn{border-color:rgba(0,229,160,0.3);color:var(--dir-accent1)}
+.dir-app .add-item-btn:hover{background:rgba(0,229,160,0.08)}
+.phd-app .add-item-btn{border-color:rgba(199,125,255,0.3);color:var(--phd-accent1)}
+.phd-app .add-item-btn:hover{background:rgba(199,125,255,0.08)}
+
+/* ICON BUTTONS */
+.icon-btn{font-size:10px;padding:3px 8px;border-radius:5px;border:1px solid rgba(255,255,255,0.09);background:rgba(255,255,255,0.03);color:#777;font-family:'Ubuntu Mono','Courier New',monospace;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.icon-btn:hover{background:rgba(255,255,255,0.1);color:#f0f4ff;border-color:rgba(255,255,255,0.2)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{border-radius:16px;padding:28px;width:440px;border:1px solid;position:relative;max-height:90vh;overflow-y:auto}
+.dir-app .modal,.settings-modal-wrap .modal{background:#0d1e35;border-color:var(--dir-border)}
+.phd-app .modal{background:#0b1a30;border-color:var(--phd-border)}
+.modal-title{font-family:'Segoe UI',Ubuntu,sans-serif;font-size:18px;font-weight:700;color:#fff;margin-bottom:20px}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:#8899bb;font-size:18px;cursor:pointer}
+.modal-close:hover{color:#ff6b6b}
+.form-group{margin-bottom:13px}
+.form-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8899bb;margin-bottom:6px;display:block}
+.form-input,.form-select,.form-textarea{width:100%;padding:9px 12px;border-radius:8px;font-family:'Ubuntu Mono','Courier New',monospace;font-size:12px;border:1px solid;background:rgba(255,255,255,0.04);color:#fff;outline:none;transition:border-color 0.2s}
+.dir-app .form-input,.dir-app .form-select,.dir-app .form-textarea,.settings-modal-wrap .form-input,.settings-modal-wrap .form-select{border-color:var(--dir-border)}
+.dir-app .form-input:focus,.dir-app .form-select:focus,.dir-app .form-textarea:focus,.settings-modal-wrap .form-input:focus{border-color:var(--dir-accent1)}
+.phd-app .form-input,.phd-app .form-select,.phd-app .form-textarea{border-color:var(--phd-border)}
+.phd-app .form-input:focus,.phd-app .form-select:focus,.phd-app .form-textarea:focus{border-color:var(--phd-accent1)}
+.form-select option{background:#0d1e35}
+.form-textarea{resize:vertical;min-height:70px}
+.submit-btn{width:100%;padding:11px;border-radius:9px;border:none;font-family:'Segoe UI',Ubuntu,sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.5px;margin-top:6px;transition:opacity 0.2s}
+.submit-btn:hover{opacity:0.88}
+.dir-app .submit-btn,.settings-modal-wrap .submit-btn-dir{background:var(--dir-accent1);color:#000}
+.phd-app .submit-btn{background:var(--phd-accent1);color:#000}
+
+/* STUDENT LIST */
+.student-item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+.student-item:last-child{border-bottom:none}
+.student-left{display:flex;align-items:center;gap:11px;flex:1;min-width:0}
+.avatar{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',Ubuntu,sans-serif;font-size:12px;font-weight:700;flex-shrink:0}
+.s-name{font-size:15px;font-weight:700;color:#ffffff}
+.s-task{font-size:12px;color:#99bbdd;margin-top:1px}
+.s-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;margin:0 8px}
+.s-due{font-size:10px;color:#8899bb}
+.badge{font-size:10px;padding:3px 9px;border-radius:5px;font-weight:700;letter-spacing:0.5px}
+.badge-pending{background:rgba(255,211,61,0.15);color:#ffd93d}
+.badge-done{background:rgba(0,229,160,0.15);color:#00e5a0}
+.badge-overdue{background:rgba(255,107,107,0.15);color:#ff6b6b}
+.badge-review{background:rgba(107,203,255,0.15);color:#6bcbff}
+.badge-running{background:rgba(199,125,255,0.15);color:#c77dff}
+.badge-planned{background:rgba(136,136,187,0.15);color:#8888bb}
+.del-btn{background:none;border:none;color:#333;cursor:pointer;font-size:12px;padding:2px 5px;border-radius:4px;margin-left:4px;transition:color 0.15s;flex-shrink:0}
+.del-btn:hover{color:#ff6b6b}
+
+/* LINKEDIN */
+.li-item{padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);margin-bottom:8px;position:relative;background:rgba(255,255,255,0.02);transition:border-color 0.2s}
+.li-item:hover{border-color:rgba(107,203,255,0.25)}
+.li-title{font-size:15px;font-weight:700;color:#ffffff;margin-bottom:4px}
+.li-meta{font-size:12px;color:#aaccee;display:flex;align-items:center;gap:8px}
+.li-badge{font-size:9px;padding:2px 7px;border-radius:4px;font-weight:700}
+.li-draft{background:rgba(255,211,61,0.12);color:#ffd93d}
+.li-scheduled{background:rgba(107,203,255,0.12);color:#6bcbff}
+.li-published{background:rgba(0,229,160,0.12);color:#00e5a0}
+.li-del{position:absolute;top:10px;right:10px}
+
+/* INTERN / PIPELINE CARDS */
+.pipeline-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.pipeline-card{border-radius:14px;padding:18px 16px;border:1px solid;position:relative;overflow:hidden;transition:transform 0.2s}
+.pipeline-card:hover{transform:translateY(-3px)}
+.dir-app .pipeline-card{background:var(--dir-card);border-color:var(--dir-border)}
+.phd-app .pipeline-card{background:var(--phd-card);border-color:var(--phd-border)}
+.pipeline-label{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:8px}
+.pipeline-name{font-family:'Segoe UI',Ubuntu,sans-serif;font-size:19px;font-weight:800;color:#fff;margin-bottom:4px}
+.pipeline-tool{font-size:12px;color:#aaccee;margin-bottom:14px}
+.pipeline-status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pipeline-pct{font-family:'Segoe UI',Ubuntu,sans-serif;font-size:22px;font-weight:800}
+.pill{font-size:9px;padding:3px 9px;border-radius:5px;font-weight:700;letter-spacing:0.5px}
+.progress-track{height:6px;border-radius:3px;background:rgba(255,255,255,0.06);overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.5s ease}
+
+/* ANALYSIS */
+.analysis-item{padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+.analysis-item:last-child{border-bottom:none}
+.analysis-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.analysis-name{font-size:15px;font-weight:700;color:#ffffff}
+.analysis-type{font-size:12px;color:#aaccee;margin-top:1px}
+.analysis-meta{font-size:10px;color:#8899bb}
+
+/* TASKS */
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.task-item:last-child{border-bottom:none}
+.task-checkbox{width:16px;height:16px;border-radius:4px;border:1.5px solid;cursor:pointer;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all 0.2s}
+.phd-app .task-checkbox{border-color:rgba(199,125,255,0.4)}
+.phd-app .task-checkbox.checked{background:var(--phd-accent1);border-color:var(--phd-accent1);color:#000}
+.task-content{flex:1}
+.task-text{font-size:14px;color:#ffffff;line-height:1.5}
+.task-text.done{text-decoration:line-through;color:#667799}
+.task-footer{display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap}
+.task-due-tag{font-size:9px;padding:2px 7px;border-radius:4px;font-weight:700}
+.tag-urgent{background:rgba(255,107,107,0.15);color:#ff6b6b}
+.tag-normal{background:rgba(255,211,61,0.10);color:#ffd93d}
+.tag-ok{background:rgba(0,229,160,0.10);color:#00e5a0}
+
+/* CLASSES */
+.class-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+.class-item:last-child{border-bottom:none}
+.class-day{width:44px;height:44px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;line-height:1.3}
+.class-day-name{font-weight:700;font-size:11px}
+.class-name{font-size:15px;font-weight:700;color:#ffffff}
+.class-meta{font-size:12px;color:#aaccee;margin-top:2px}
+
+/* TIMELINE */
+.timeline{padding:8px 0}
+.tl-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04);position:relative}
+.tl-item:last-child{border-bottom:none}
+.tl-marker{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;position:relative}
+.tl-marker.active::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1px solid;animation:ring 1.5s infinite;opacity:0.5}
+@keyframes ring{0%{transform:scale(1);opacity:0.5}100%{transform:scale(1.8);opacity:0}}
+.tl-content{flex:1}
+.tl-title{font-size:15px;font-weight:700;color:#ffffff}
+.tl-date{font-size:12px;color:#aaccee;margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.tl-days{font-family:'Segoe UI',Ubuntu,sans-serif;font-size:20px;font-weight:800}
+
+/* HEATMAP */
+.heatmap-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
+.hm-labels{display:flex;justify-content:space-around;font-size:9px;color:#667799;margin-bottom:4px;letter-spacing:0.5px}
+.hm-cell{width:100%;aspect-ratio:1;border-radius:3px;transition:transform 0.15s;cursor:default}
+.hm-cell:hover{transform:scale(1.3)}
+
+/* SAVE TOAST */
+#save-toast{position:fixed;bottom:24px;right:24px;background:#071a35;border:1px solid #3a8fff;color:#00e5a0;font-size:11px;font-family:'Ubuntu Mono','Courier New',monospace;padding:8px 16px;border-radius:8px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:9999;letter-spacing:1px}
+
+/* SETTINGS MODAL (always dir-style since it's global) */
+.settings-modal-wrap .modal{background:#071528;border-color:#1a3a5c}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:28px 16px;color:#667799;font-size:12px}
+.empty-icon{font-size:28px;margin-bottom:10px;opacity:0.5}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{border-radius:3px;background:#222}
+
+@media(max-width:900px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .content-grid-2,.content-grid-3{grid-template-columns:1fr}
+  .pipeline-grid{grid-template-columns:1fr 1fr}
+  .login-cards{flex-direction:column}
+  .qlink-bar{flex-wrap:wrap}
+}
+@media(max-width:600px){
+  .login-logo{font-size:28px}
+  .login-card{width:100%;max-width:340px}
+  .login-cards{flex-direction:column;gap:20px;padding:0 12px}
+  .pin-btn{font-size:20px;padding:18px 8px;min-height:58px}
+  .pin-pad{gap:10px}
+  .topbar{padding:10px 14px;flex-wrap:wrap;gap:6px}
+  .tb-nav{gap:2px;overflow-x:auto}
+  .tb-navbtn{padding:5px 10px;font-size:10px}
+  .page{padding:14px}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat-val{font-size:24px}
+  .pipeline-grid{grid-template-columns:1fr}
+  .content-grid-2,.content-grid-3{grid-template-columns:1fr}
+  .card-body{padding:10px 12px}
+  .student-item{flex-wrap:wrap;gap:6px}
+  .qlink-bar{padding:6px 14px;gap:5px}
+  .qlink-btn{font-size:9px;padding:3px 8px}
+  .modal{width:95vw;padding:20px 16px}
+  .sec-title{font-size:18px}
+  .tb-date{display:none}
+  #notif-panel{width:90vw;right:5vw}
+  .pipeline-card{padding:14px 12px}
+  .login-card-title{font-size:17px}
+  .login-card-desc{font-size:10px;margin-bottom:16px}
+  .login-pin-label{font-size:9px}
+  .pin-dots{gap:12px}
+  .pin-dot{width:16px;height:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- SAVE TOAST -->
+<div id="save-toast">✓ saved</div>
+
+<!-- NOTIFICATION PANEL -->
+<div id="notif-panel"></div>
+
+<!-- MORNING SUMMARY MODAL -->
+<div id="morning-modal">
+  <div id="morning-box">
+    <div class="morning-title">Good Morning! 👋</div>
+    <div class="morning-sub" id="morning-date"></div>
+    <div id="morning-content"></div>
+    <button class="morning-dismiss" onclick="document.getElementById('morning-modal').classList.remove('open')">Start My Day →</button>
+  </div>
+</div>
+
+<!-- BOOT LOADING SCREEN -->
+<div id="boot-screen" style="display:none;position:fixed;inset:0;background:#010812;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:20px">
+  <div style="font-family:'Segoe UI',Ubuntu,sans-serif;font-size:38px;font-weight:800;color:#fff">Bio<span style="color:#00e5a0">Resire</span> Hub</div>
+  <div style="font-size:13px;color:#00e5a0;letter-spacing:3px;font-family:'Ubuntu Mono','Courier New',monospace">CONNECTING TO GOOGLE DRIVE...</div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <div style="width:10px;height:10px;border-radius:50%;background:#00e5a0;animation:pulse 0.8s 0s infinite"></div>
+    <div style="width:10px;height:10px;border-radius:50%;background:#00e5a0;animation:pulse 0.8s 0.2s infinite"></div>
+    <div style="width:10px;height:10px;border-radius:50%;background:#00e5a0;animation:pulse 0.8s 0.4s infinite"></div>
+  </div>
+  <div style="font-size:11px;color:#444;font-family:'Ubuntu Mono','Courier New',monospace;margin-top:4px">Loading your data from Drive — please wait</div>
+</div>
+
+<!-- SYNC INDICATOR (shown inside topbar) -->
+<div id="sync-indicator" style="display:none;font-size:10px;padding:4px 12px;border-radius:6px;font-family:'Ubuntu Mono','Courier New',monospace;letter-spacing:0.5px"></div>
+
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-title">workspace selector</div>
+  <div class="login-logo">Bio<span>Resire</span> Hub</div>
+  <div class="login-sub">/ dual-role command center · v2</div>
+  <div class="login-cards">
+    <!-- DIRECTOR -->
+    <div class="login-card dir-card">
+      <div class="login-card-icon">🏛️</div>
+      <div class="login-card-title">Bio<span>Resire</span> Director</div>
+      <div class="login-card-desc">Students · Internships<br>Classes · LinkedIn Queue</div>
+      <div class="login-pin-label">enter pin</div>
+      <div class="pin-dots" id="dir-dots">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      </div>
+      <div class="pin-pad">
+        <button class="pin-btn" onclick="pinInput('dir',1)">1</button>
+        <button class="pin-btn" onclick="pinInput('dir',2)">2</button>
+        <button class="pin-btn" onclick="pinInput('dir',3)">3</button>
+        <button class="pin-btn" onclick="pinInput('dir',4)">4</button>
+        <button class="pin-btn" onclick="pinInput('dir',5)">5</button>
+        <button class="pin-btn" onclick="pinInput('dir',6)">6</button>
+        <button class="pin-btn" onclick="pinInput('dir',7)">7</button>
+        <button class="pin-btn" onclick="pinInput('dir',8)">8</button>
+        <button class="pin-btn" onclick="pinInput('dir',9)">9</button>
+        <button class="pin-btn" onclick="pinInput('dir','C')" style="font-size:10px">CLR</button>
+        <button class="pin-btn" onclick="pinInput('dir',0)">0</button>
+        <button class="pin-btn" onclick="pinInput('dir','X')" style="font-size:14px">⌫</button>
+      </div>
+      <div class="pin-error" id="dir-error"></div>
+      
+    </div>
+    <!-- PHD -->
+    <div class="login-card phd-card">
+      <div class="login-card-icon">🔬</div>
+      <div class="login-card-title">PhD <span>Research</span></div>
+      <div class="login-card-desc">HiC · ChIP-seq · RNA-seq<br>Pipelines · Deadlines · Tasks</div>
+      <div class="login-pin-label">enter pin</div>
+      <div class="pin-dots" id="phd-dots">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      </div>
+      <div class="pin-pad">
+        <button class="pin-btn" onclick="pinInput('phd',1)">1</button>
+        <button class="pin-btn" onclick="pinInput('phd',2)">2</button>
+        <button class="pin-btn" onclick="pinInput('phd',3)">3</button>
+        <button class="pin-btn" onclick="pinInput('phd',4)">4</button>
+        <button class="pin-btn" onclick="pinInput('phd',5)">5</button>
+        <button class="pin-btn" onclick="pinInput('phd',6)">6</button>
+        <button class="pin-btn" onclick="pinInput('phd',7)">7</button>
+        <button class="pin-btn" onclick="pinInput('phd',8)">8</button>
+        <button class="pin-btn" onclick="pinInput('phd',9)">9</button>
+        <button class="pin-btn" onclick="pinInput('phd','C')" style="font-size:10px">CLR</button>
+        <button class="pin-btn" onclick="pinInput('phd',0)">0</button>
+        <button class="pin-btn" onclick="pinInput('phd','X')" style="font-size:14px">⌫</button>
+      </div>
+      <div class="pin-error" id="phd-error"></div>
+      
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+<!-- ===== DIRECTOR APP ===== -->
+<div id="dir-app" class="dir-app">
+  <div class="topbar">
+    <div class="tb-brand"><div class="tb-dot"></div>BioResire <span style="color:var(--dir-accent1);margin-left:4px">Director</span></div>
+    <div class="tb-nav">
+      <button class="tb-navbtn active" onclick="dirPage('dashboard',this)">Dashboard</button>
+      <button class="tb-navbtn" onclick="dirPage('students',this)">Students</button>
+      <button class="tb-navbtn" onclick="dirPage('internships',this)">Internships</button>
+      <button class="tb-navbtn" onclick="dirPage('classes',this)">Classes</button>
+      <button class="tb-navbtn" onclick="dirPage('linkedin',this)">LinkedIn</button>
+    </div>
+    <div class="tb-right">
+      <div class="tb-date" id="dir-date"></div>
+      <div id="sync-indicator-dir" style="font-size:10px;padding:3px 10px;border-radius:6px;font-family:monospace;letter-spacing:0.5px;background:rgba(0,229,160,0.1);color:#00e5a0">● Drive</div>
+      <button class="settings-btn" onclick="showMorningSummary('dir')" title="Daily Summary" style="font-size:16px">🔔</button>
+      <button class="settings-btn" onclick="openSettings()" title="Settings">⚙</button>
+      <button class="logout-btn" onclick="logout()">← switch</button>
+    </div>
+  </div>
+  <div class="qlink-bar">
+    <span class="qlink-label">quick links</span>
+    <a class="qlink-btn" onclick="openGmail('dir')" href="#"><span class="ql-icon">✉</span> Gmail</a>
+    <a class="qlink-btn" onclick="openCalendarMain()" href="#"><span class="ql-icon">📅</span> Calendar</a>
+    <a class="qlink-btn" onclick="openLinkedIn()" href="#"><span class="ql-icon">💼</span> LinkedIn</a>
+    <a class="qlink-btn" onclick="openWhatsApp('')" href="#"><span class="ql-icon">💬</span> WhatsApp</a>
+    <a class="qlink-btn" onclick="openLink('https://meet.google.com/')" href="#"><span class="ql-icon">🎥</span> Google Meet</a>
+    <a class="qlink-btn" onclick="openLink('https://drive.google.com/')" href="#"><span class="ql-icon">📁</span> Drive</a>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="dir-dashboard">
+    <div class="sec-header">
+      <div><div class="sec-title">Good day, Director 👋</div><div class="sec-sub">Here's your BioResire overview</div></div>
+    </div>
+    <div class="stats-grid" id="dir-stats-grid"></div>
+    <div class="content-grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-title-dot" style="background:#00e5a0"></div>Recent Assignments</div>
+          <button class="add-item-btn" onclick="dirPage('students',document.querySelectorAll('#dir-app .tb-navbtn')[1])">view all</button>
+        </div>
+        <div class="card-body" id="dir-recent-students"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-title-dot" style="background:#6bcbff"></div>LinkedIn Queue</div>
+          <button class="add-item-btn" onclick="dirPage('linkedin',document.querySelectorAll('#dir-app .tb-navbtn')[4])">view all</button>
+        </div>
+        <div class="card-body" id="dir-recent-li"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><div class="card-title-dot" style="background:#ffd93d"></div>Class Schedule</div></div>
+      <div class="card-body" id="dir-class-preview"></div>
+    </div>
+  </div>
+
+  <!-- STUDENTS -->
+  <div class="page" id="dir-students">
+    <div class="sec-header">
+      <div><div class="sec-title">Students & Assignments</div><div class="sec-sub" id="student-count-label"></div></div>
+      <button class="add-item-btn" onclick="openModal('student-modal')">+ add student</button>
+    </div>
+    <div class="card"><div class="card-body" id="students-list"></div></div>
+  </div>
+
+  <!-- INTERNSHIPS -->
+  <div class="page" id="dir-internships">
+    <div class="sec-header">
+      <div><div class="sec-title">Internship Tracker</div><div class="sec-sub" id="intern-count-label"></div></div>
+      <button class="add-item-btn" onclick="openModal('intern-modal')">+ add intern</button>
+    </div>
+    <div class="pipeline-grid" id="intern-grid"></div>
+  </div>
+
+  <!-- CLASSES -->
+  <div class="page" id="dir-classes">
+    <div class="sec-header">
+      <div><div class="sec-title">Class Schedule</div><div class="sec-sub">Your teaching sessions</div></div>
+      <button class="add-item-btn" onclick="openModal('class-modal')">+ add class</button>
+    </div>
+    <div class="content-grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-title-dot" style="background:#ffd93d"></div>Upcoming Classes</div></div>
+        <div class="card-body" id="classes-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-title-dot" style="background:#ff6b6b"></div>Weekly Overview</div></div>
+        <div class="card-body" id="weekly-overview"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LINKEDIN -->
+  <div class="page" id="dir-linkedin">
+    <div class="sec-header">
+      <div><div class="sec-title">LinkedIn Content Queue</div><div class="sec-sub">Plan, schedule and track posts</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="add-item-btn" onclick="openLinkedIn()" style="border-style:solid">🔗 Open LinkedIn</button>
+        <button class="add-item-btn" onclick="openModal('li-modal')">+ add post</button>
+      </div>
+    </div>
+    <div class="content-grid-3">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-title-dot" style="background:#ffd93d"></div>Drafts</div></div>
+        <div class="card-body" id="li-drafts"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-title-dot" style="background:#6bcbff"></div>Scheduled</div></div>
+        <div class="card-body" id="li-scheduled"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-title-dot" style="background:#00e5a0"></div>Published</div></div>
+        <div class="card-body" id="li-published"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIR MODALS -->
+  <div class="modal-overlay" id="student-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('student-modal')">✕</button>
+      <div class="modal-title">Add Student</div>
+      <div class="form-group"><label class="form-label">Student Name</label><input class="form-input" id="s-name" placeholder="Full name"></div>
+      <div class="form-group"><label class="form-label">Assignment / Task</label><input class="form-input" id="s-task" placeholder="e.g. RNA-seq pipeline analysis"></div>
+      <div class="form-group"><label class="form-label">Email (for quick email)</label><input class="form-input" id="s-email" type="email" placeholder="student@email.com"></div>
+      <div class="form-group"><label class="form-label">Due Date</label><input class="form-input" type="date" id="s-due"></div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-select" id="s-status">
+          <option value="pending">Pending</option>
+          <option value="review">Submitted — Review</option>
+          <option value="done">Done / Graded</option>
+          <option value="overdue">Overdue</option>
+        </select>
+      </div>
+      <button class="submit-btn" onclick="addStudent()">Add Student</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="intern-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('intern-modal')">✕</button>
+      <div class="modal-title">Add Intern</div>
+      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="i-name" placeholder="Intern name"></div>
+      <div class="form-group"><label class="form-label">Project / Analysis Type</label><input class="form-input" id="i-project" placeholder="e.g. ChIP-seq pipeline"></div>
+      <div class="form-group"><label class="form-label">Email (for check-ins)</label><input class="form-input" id="i-email" type="email" placeholder="intern@email.com"></div>
+      <div class="form-group"><label class="form-label">Total Weeks</label><input class="form-input" type="number" id="i-total" value="12" min="1"></div>
+      <div class="form-group"><label class="form-label">Current Week</label><input class="form-input" type="number" id="i-current" value="1" min="1"></div>
+      <button class="submit-btn" onclick="addIntern()">Add Intern</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="class-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('class-modal')">✕</button>
+      <div class="modal-title">Add Class</div>
+      <div class="form-group"><label class="form-label">Class Name</label><input class="form-input" id="c-name" placeholder="e.g. Intro to Bioinformatics"></div>
+      <div class="form-group"><label class="form-label">Day</label>
+        <select class="form-select" id="c-day">
+          <option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option><option>Sat</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Time</label><input class="form-input" type="time" id="c-time"></div>
+      <div class="form-group"><label class="form-label">Location / Platform</label><input class="form-input" id="c-loc" placeholder="e.g. Room 204 / Zoom"></div>
+      <div class="form-group"><label class="form-label">Meeting Link (Zoom/Meet URL)</label><input class="form-input" id="c-meet" placeholder="https://meet.google.com/..."></div>
+      <button class="submit-btn" onclick="addClass()">Add Class</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="li-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('li-modal')">✕</button>
+      <div class="modal-title">Add LinkedIn Post</div>
+      <div class="form-group"><label class="form-label">Post Title / Topic</label><input class="form-input" id="li-title" placeholder="e.g. HiC chromatin findings"></div>
+      <div class="form-group"><label class="form-label">Notes / Key Points</label><textarea class="form-textarea" id="li-notes" placeholder="What to include..."></textarea></div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-select" id="li-status">
+          <option value="draft">Draft</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="published">Published</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="li-date"></div>
+      <button class="submit-btn" onclick="addLinkedIn()">Add Post</button>
+    </div>
+  </div>
+</div><!-- /dir-app -->
+
+<!-- ===== PHD APP ===== -->
+<div id="phd-app" class="phd-app">
+  <div class="topbar">
+    <div class="tb-brand"><div class="tb-dot"></div>PhD <span style="color:var(--phd-accent1);margin-left:4px">Research</span></div>
+    <div class="tb-nav">
+      <button class="tb-navbtn active" onclick="phdPage('dashboard',this)">Dashboard</button>
+      <button class="tb-navbtn" onclick="phdPage('analyses',this)">Analyses</button>
+      <button class="tb-navbtn" onclick="phdPage('tasks',this)">Tasks</button>
+      <button class="tb-navbtn" onclick="phdPage('deadlines',this)">Deadlines</button>
+    </div>
+    <div class="tb-right">
+      <div class="tb-date" id="phd-date"></div>
+      <div id="sync-indicator-phd" style="font-size:10px;padding:3px 10px;border-radius:6px;font-family:monospace;letter-spacing:0.5px;background:rgba(199,125,255,0.1);color:#c77dff">● Drive</div>
+      <button class="settings-btn" onclick="showMorningSummary('phd')" title="Daily Summary" style="font-size:16px">🔔</button>
+      <button class="settings-btn" onclick="openSettings()" title="Settings">⚙</button>
+      <button class="logout-btn" onclick="logout()">← switch</button>
+    </div>
+  </div>
+  <div class="qlink-bar">
+    <span class="qlink-label">quick links</span>
+    <a class="qlink-btn" onclick="openGmail('phd')" href="#"><span class="ql-icon">✉</span> Gmail (PhD)</a>
+    <a class="qlink-btn" onclick="openCalendarMain()" href="#"><span class="ql-icon">📅</span> Calendar</a>
+    <a class="qlink-btn" onclick="openLink('https://drive.google.com/')" href="#"><span class="ql-icon">📁</span> Drive</a>
+    <a class="qlink-btn" onclick="openLink('https://scholar.google.com/')" href="#"><span class="ql-icon">🎓</span> Scholar</a>
+    <a class="qlink-btn" onclick="openLink('https://pubmed.ncbi.nlm.nih.gov/')" href="#"><span class="ql-icon">🧬</span> PubMed</a>
+    <a class="qlink-btn" onclick="openLink('https://www.ncbi.nlm.nih.gov/')" href="#"><span class="ql-icon">🔬</span> NCBI</a>
+    <a class="qlink-btn" onclick="openLink('https://github.com/')" href="#"><span class="ql-icon">🐙</span> GitHub</a>
+    <a class="qlink-btn" onclick="openWhatsApp('')" href="#"><span class="ql-icon">💬</span> WhatsApp</a>
+  </div>
+
+  <!-- PHD DASHBOARD -->
+  <div class="page active" id="phd-dashboard">
+    <div class="sec-header">
+      <div><div class="sec-title">Research Overview 🔬</div><div class="sec-sub">Your bioinformatics pipeline status</div></div>
+    </div>
+    <div class="stats-grid" id="phd-stats-grid"></div>
+    <div class="content-grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-title-dot" style="background:#c77dff"></div>Active Analyses</div>
+          <button class="add-item-btn" onclick="phdPage('analyses',document.querySelectorAll('#phd-app .tb-navbtn')[1])">view all</button>
+        </div>
+        <div class="card-body" id="phd-recent-analyses"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-title-dot" style="background:#fb8500"></div>Upcoming Deadlines</div>
+          <button class="add-item-btn" onclick="phdPage('deadlines',document.querySelectorAll('#phd-app .tb-navbtn')[3])">view all</button>
+        </div>
+        <div class="card-body" id="phd-recent-deadlines"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><div class="card-title-dot" style="background:#70e000"></div>Tasks This Week</div></div>
+      <div class="card-body" id="phd-recent-tasks"></div>
+    </div>
+  </div>
+
+  <!-- ANALYSES -->
+  <div class="page" id="phd-analyses">
+    <div class="sec-header">
+      <div><div class="sec-title">Bioinformatics Analyses</div><div class="sec-sub">HiC · ChIP-seq · RNA-seq · Multi-omics</div></div>
+      <button class="add-item-btn" onclick="openModal('analysis-modal')">+ add analysis</button>
+    </div>
+    <div class="pipeline-grid" id="analyses-grid"></div>
+  </div>
+
+  <!-- TASKS -->
+  <div class="page" id="phd-tasks">
+    <div class="sec-header">
+      <div><div class="sec-title">PhD Tasks</div><div class="sec-sub" id="task-count-label"></div></div>
+      <button class="add-item-btn" onclick="openModal('task-modal')">+ add task</button>
+    </div>
+    <div class="card"><div class="card-body" id="tasks-list"></div></div>
+  </div>
+
+  <!-- DEADLINES -->
+  <div class="page" id="phd-deadlines">
+    <div class="sec-header">
+      <div><div class="sec-title">PhD Deadlines</div><div class="sec-sub">Thesis chapters, conferences, submissions</div></div>
+      <button class="add-item-btn" onclick="openModal('deadline-modal')">+ add deadline</button>
+    </div>
+    <div class="content-grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-title-dot" style="background:#fb8500"></div>Timeline</div></div>
+        <div class="card-body"><div class="timeline" id="deadlines-list"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-title-dot" style="background:#48cae4"></div>Activity Heatmap</div></div>
+        <div class="card-body">
+          <div style="font-size:10px;color:#8899bb;margin-bottom:10px;letter-spacing:1px">WORK SESSIONS — LAST 12 WEEKS</div>
+          <div class="hm-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+          <div class="heatmap-grid" id="heatmap"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHD MODALS -->
+  <div class="modal-overlay" id="analysis-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('analysis-modal')">✕</button>
+      <div class="modal-title">Add Analysis</div>
+      <div class="form-group"><label class="form-label">Analysis Name</label><input class="form-input" id="an-name" placeholder="e.g. HiC chromatin loops"></div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-select" id="an-type">
+          <option value="HiC">HiC</option><option value="ChIP-seq">ChIP-seq</option>
+          <option value="RNA-seq">RNA-seq</option><option value="Multi-omics">Multi-omics integration</option>
+          <option value="ATAC-seq">ATAC-seq</option><option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Tool / Pipeline</label><input class="form-input" id="an-tool" placeholder="e.g. Juicebox, MACS2, DESeq2"></div>
+      <div class="form-group"><label class="form-label">Progress %</label><input class="form-input" type="number" id="an-pct" value="0" min="0" max="100"></div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-select" id="an-status">
+          <option value="planned">Planned</option><option value="running">Running</option>
+          <option value="review">In Review</option><option value="done">Done</option>
+        </select>
+      </div>
+      <button class="submit-btn" onclick="addAnalysis()">Add Analysis</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="task-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('task-modal')">✕</button>
+      <div class="modal-title">Add PhD Task</div>
+      <div class="form-group"><label class="form-label">Task</label><input class="form-input" id="t-name" placeholder="e.g. Write chapter 2 intro"></div>
+      <div class="form-group"><label class="form-label">Due Date</label><input class="form-input" type="date" id="t-due"></div>
+      <div class="form-group"><label class="form-label">Priority</label>
+        <select class="form-select" id="t-priority">
+          <option value="urgent">Urgent</option><option value="normal">Normal</option><option value="low">Low</option>
+        </select>
+      </div>
+      <button class="submit-btn" onclick="addTask()">Add Task</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="deadline-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('deadline-modal')">✕</button>
+      <div class="modal-title">Add Deadline</div>
+      <div class="form-group"><label class="form-label">Milestone</label><input class="form-input" id="d-name" placeholder="e.g. Chapter 2 draft submission"></div>
+      <div class="form-group"><label class="form-label">Due Date</label><input class="form-input" type="date" id="d-due"></div>
+      <div class="form-group"><label class="form-label">Category</label>
+        <select class="form-select" id="d-cat">
+          <option value="thesis">Thesis</option><option value="conference">Conference</option>
+          <option value="publication">Publication</option><option value="meeting">Advisor Meeting</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <button class="submit-btn" onclick="addDeadline()">Add Deadline</button>
+    </div>
+  </div>
+</div><!-- /phd-app -->
+
+<!-- SETTINGS MODAL (global, outside both apps) -->
+<div class="modal-overlay settings-modal-wrap" id="settings-modal">
+  <div class="modal" style="background:#010d1f;border-color:#0d2a45;width:480px">
+    <button class="modal-close" onclick="closeModal('settings-modal')">✕</button>
+    <div class="modal-title">⚙ Settings & Integrations</div>
+
+    <div style="font-size:10px;letter-spacing:2px;color:#00e5a0;margin-bottom:12px;text-transform:uppercase">Security</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+      <div class="form-group" style="margin:0"><label class="form-label">Director PIN (4 digits)</label><input class="form-input" id="set-dir-pin" type="password" maxlength="4" placeholder="1234"></div>
+      <div class="form-group" style="margin:0"><label class="form-label">PhD PIN (4 digits)</label><input class="form-input" id="set-phd-pin" type="password" maxlength="4" placeholder="5678"></div>
+    </div>
+
+    <div style="font-size:10px;letter-spacing:2px;color:#00e5a0;margin-bottom:12px;text-transform:uppercase">Email Accounts</div>
+    <div class="form-group"><label class="form-label">Director Gmail (for student emails)</label><input class="form-input" id="set-gmail-dir" type="email" placeholder="director@gmail.com"></div>
+    <div class="form-group"><label class="form-label">PhD Gmail (for advisor / self notes)</label><input class="form-input" id="set-gmail-phd" type="email" placeholder="phd@gmail.com"></div>
+
+    <div style="font-size:10px;letter-spacing:2px;color:#00e5a0;margin-bottom:12px;text-transform:uppercase">Other Integrations</div>
+    <div class="form-group"><label class="form-label">WhatsApp Number (with country code, digits only)</label><input class="form-input" id="set-wa" placeholder="919876543210"></div>
+    <div class="form-group"><label class="form-label">LinkedIn Profile / Post URL</label><input class="form-input" id="set-li-url" placeholder="https://www.linkedin.com/in/yourprofile/"></div>
+    <div class="form-group"><label class="form-label">Google Calendar URL</label><input class="form-input" id="set-cal-url" placeholder="https://calendar.google.com/"></div>
+
+    <div style="font-size:10px;letter-spacing:2px;color:#00e5a0;margin-bottom:12px;text-transform:uppercase">Cloud Sync (JSONBin.io)</div>
+    <div style="font-size:11px;color:#666;margin-bottom:10px;line-height:1.8">Free sync between Linux &amp; Windows.<br>
+    Go to <strong style="color:#aaa">jsonbin.io</strong> → Sign up free → Create Bin → copy Bin ID and Master Key below.</div>
+    <div class="form-group"><label class="form-label">JSONBin Bin ID</label><input class="form-input" id="set-bin-id" placeholder="e.g. 6601234abc123456789"></div>
+    <div class="form-group"><label class="form-label">JSONBin Master Key (API Key)</label><input class="form-input" id="set-bin-key" placeholder="$2a$10$..."></div>
+
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button onclick="saveSettings()" style="flex:1;padding:11px;border-radius:9px;border:none;font-family:'Segoe UI',Ubuntu,sans-serif;font-size:13px;font-weight:700;cursor:pointer;background:#00e5a0;color:#000">Save Settings</button>
+      <button onclick="resetAllData()" style="padding:11px 16px;border-radius:9px;border:1px solid #ff6b6b;background:transparent;font-family:'Ubuntu Mono','Courier New',monospace;font-size:11px;cursor:pointer;color:#ff6b6b">Reset All Data</button>
+    </div>
+
+    <div style="border-top:1px solid #0d2a45;margin-top:20px;padding-top:18px">
+      <div style="font-size:10px;letter-spacing:2px;color:#00e5a0;margin-bottom:12px;text-transform:uppercase">Backup & Restore</div>
+      <div style="font-size:11px;color:#666;margin-bottom:14px;line-height:1.8">
+        Export saves all your data as a <span style="color:#aaa">.json file</span> on your computer.<br>
+        Import restores everything from a previously exported file.<br>
+        <span style="color:#ffd93d">⚠ Always export before clearing browser cache.</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+        <button onclick="exportBackup()" style="padding:11px;border-radius:9px;border:1px solid #00e5a0;background:rgba(0,229,160,0.08);font-family:'Segoe UI',Ubuntu,sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:#00e5a0">⬇ Export Backup</button>
+        <label style="padding:11px;border-radius:9px;border:1px solid #6bcbff;background:rgba(107,203,255,0.08);font-family:'Segoe UI',Ubuntu,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#6bcbff;text-align:center;display:block;line-height:1.5">
+          ⬆ Import Backup
+          <input type="file" id="import-file" accept=".json" onchange="importBackup(event)" style="display:none">
+        </label>
+      </div>
+      <div id="backup-msg" style="font-size:11px;text-align:center;min-height:16px;color:#555"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ===== JSONBIN.IO SYNC — SINGLE SOURCE OF TRUTH =====
+// Free JSON storage — works from any browser, no CORS issues
+// Bin ID and API key stored in settings so user can configure
+const LS_KEY = 'bioresire_hub_v3_cache';
+const today    = new Date();
+
+const defaultStore = {
+  students:[
+    {id:1,name:'Rohit Kumar',task:'RNA-seq pipeline',due:'2026-03-22',status:'pending',email:''},
+    {id:2,name:'Priya Sharma',task:'ChIP-seq data review',due:'2026-03-20',status:'review',email:''},
+    {id:3,name:'Arjun Mehta',task:'Genome assembly project',due:'2026-03-17',status:'overdue',email:''},
+    {id:4,name:'Nisha K.',task:'HiC contact map analysis',due:'2026-03-15',status:'done',email:''},
+    {id:5,name:'Dev Rao',task:'MACS2 peak calling lab',due:'2026-03-28',status:'pending',email:''},
+  ],
+  interns:[
+    {id:1,name:'Priya Sharma',project:'ChIP-seq pipeline',total:12,current:6,email:''},
+    {id:2,name:'Dev Rao',project:'RNA-seq analysis',total:12,current:3,email:''},
+    {id:3,name:'Fatima Z.',project:'HiC visualization',total:12,current:10,email:''},
+  ],
+  classes:[
+    {id:1,name:'Intro to Bioinformatics',day:'Mon',time:'09:00',loc:'Room 204',meet:''},
+    {id:2,name:'RNA-seq Workshop',day:'Wed',time:'14:00',loc:'Zoom',meet:''},
+    {id:3,name:'Genomics Seminar',day:'Fri',time:'11:00',loc:'Auditorium B',meet:''},
+  ],
+  linkedin:[
+    {id:1,title:'HiC chromatin loop findings',notes:'Key results from latest analysis',status:'draft',date:'2026-03-21'},
+    {id:2,title:'Internship openings — bioinformatics',notes:'Open positions for students',status:'scheduled',date:'2026-03-24'},
+    {id:3,title:'New RNA-seq curriculum launch',notes:'Details about our new course',status:'scheduled',date:'2026-03-26'},
+    {id:4,title:'Student spotlight — PhD cohort',notes:'Achievements this semester',status:'draft',date:''},
+    {id:5,title:'Welcome to BioResire blog',notes:'',status:'published',date:'2026-03-10'},
+  ],
+  analyses:[
+    {id:1,name:'Chromatin Loop Detection',type:'HiC',tool:'Juicebox / HiCExplorer',pct:75,status:'running'},
+    {id:2,name:'H3K27ac Peak Calling',type:'ChIP-seq',tool:'MACS2',pct:100,status:'done'},
+    {id:3,name:'Differential Gene Expression',type:'RNA-seq',tool:'DESeq2',pct:55,status:'running'},
+    {id:4,name:'HiC + ChIP + RNA integration',type:'Multi-omics',tool:'Custom pipeline',pct:20,status:'planned'},
+  ],
+  tasks:[
+    {id:1,name:'Finish DESeq2 volcano plot',due:'2026-03-21',priority:'urgent',done:false},
+    {id:2,name:'Write chapter 2 intro (HiC methods)',due:'2026-04-05',priority:'normal',done:false},
+    {id:3,name:'Advisor meeting — present HiC results',due:'2026-03-20',priority:'urgent',done:true},
+    {id:4,name:'Multi-omics integration pipeline setup',due:'2026-04-15',priority:'normal',done:false},
+    {id:5,name:'Submit abstract — ISMB conference',due:'2026-03-25',priority:'urgent',done:false},
+    {id:6,name:'Review ChIP-seq QC reports',due:'2026-03-22',priority:'normal',done:true},
+  ],
+  deadlines:[
+    {id:1,name:'Chapter 2 draft submission',due:'2026-04-05',cat:'thesis'},
+    {id:2,name:'ISMB abstract deadline',due:'2026-03-25',cat:'conference'},
+    {id:3,name:'Advisor monthly check-in',due:'2026-03-20',cat:'meeting'},
+    {id:4,name:'Thesis proposal revision',due:'2026-05-01',cat:'thesis'},
+    {id:5,name:'Research paper first draft',due:'2026-06-15',cat:'publication'},
+  ],
+  settings:{dirPin:'1234',phdPin:'5678',gmailDir:'',gmailPhd:'',whatsapp:'',linkedinUrl:'https://www.linkedin.com/feed/',calendarUrl:'https://calendar.google.com/',binId:'',binApiKey:''}
+};
+
+// The live store object — starts empty, filled on load
+let store = JSON.parse(JSON.stringify(defaultStore));
+let syncStatus = 'loading'; // loading | online | offline
+
+// ── SYNC INDICATOR ───────────────────────────────────────────────────────
+function setSyncIndicator(status, msg){
+  syncStatus = status;
+  const styles = {
+    online:  {bg:'rgba(0,229,160,0.12)',  color:'#00e5a0'},
+    offline: {bg:'rgba(255,107,107,0.12)',color:'#ff6b6b'},
+    loading: {bg:'rgba(255,211,61,0.10)', color:'#ffd93d'},
+    saving:  {bg:'rgba(107,203,255,0.12)',color:'#6bcbff'},
+  };
+  const s = styles[status] || styles.loading;
+  const anim = (status==='loading'||status==='saving') ? 'pulse 1s infinite' : 'none';
+  const html = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${s.color};margin-right:6px;animation:${anim}"></span>${msg}`;
+  ['sync-indicator-dir','sync-indicator-phd'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.style.background=s.bg; el.style.color=s.color; el.innerHTML=html;
+  });
+}
+
+// ── JSONBIN API ───────────────────────────────────────────────────────────
+function getBinConfig(){
+  const s = store.settings;
+  return { binId: s.binId||'', apiKey: s.binApiKey||'' };
+}
+
+async function loadStore(){
+  setSyncIndicator('loading','Connecting...');
+  const {binId, apiKey} = getBinConfig();
+
+  // Try JSONBin if configured
+  if(binId && apiKey){
+    try{
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`,{
+        headers:{'X-Master-Key': apiKey, 'X-Bin-Meta':'false'}
+      });
+      if(res.ok){
+        const remote = await res.json();
+        if(remote && remote.settings){
+          const merged={...defaultStore,...remote,settings:{...defaultStore.settings,...(remote.settings||{})}};
+          Object.assign(store, merged);
+          try{localStorage.setItem(LS_KEY,JSON.stringify(store));}catch(e){}
+          setSyncIndicator('online','● Synced');
+          return;
+        }
+      }
+    }catch(e){ console.warn('JSONBin load failed:',e); }
+  }
+
+  // Fallback to local cache
+  try{
+    const cached=localStorage.getItem(LS_KEY);
+    if(cached){
+      const parsed=JSON.parse(cached);
+      const merged={...defaultStore,...parsed,settings:{...defaultStore.settings,...(parsed.settings||{})}};
+      Object.assign(store,merged);
+      if(binId && apiKey) setSyncIndicator('offline','⚠ Offline — cached');
+      else setSyncIndicator('offline','⚠ Sync not set up');
+      return;
+    }
+  }catch(e){}
+  Object.assign(store,JSON.parse(JSON.stringify(defaultStore)));
+  setSyncIndicator('offline','⚠ Sync not set up');
+}
+
+let saveTimer=null;
+async function saveStore(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(store));}catch(e){}
+  showToast('saving');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    const {binId,apiKey}=getBinConfig();
+    if(!binId||!apiKey){ showToast('offline'); return; }
+    setSyncIndicator('saving','⟳ Saving...');
+    try{
+      const res=await fetch(`https://api.jsonbin.io/v3/b/${binId}`,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json','X-Master-Key':apiKey,'X-Bin-Versioning':'false'},
+        body:JSON.stringify(store)
+      });
+      if(res.ok){
+        setSyncIndicator('online','● Synced');
+        showToast('saved');
+        setTimeout(()=>setSyncIndicator('online','● Synced'),3000);
+      } else { throw new Error('Save failed'); }
+    }catch(e){
+      setSyncIndicator('offline','⚠ Saved locally');
+      showToast('offline');
+    }
+  },800);
+}
+
+function showToast(type){
+  const t=document.getElementById('save-toast');
+  if(!t) return;
+  if(type==='saving'){t.textContent='⟳ syncing...';t.style.borderColor='#6bcbff';t.style.color='#6bcbff';}
+  else if(type==='saved'){t.textContent='✓ synced';t.style.borderColor='#00e5a0';t.style.color='#00e5a0';}
+  else if(type==='offline'){t.textContent='⚠ local only';t.style.borderColor='#ffd93d';t.style.color='#ffd93d';}
+  t.style.opacity='1';
+  setTimeout(()=>{t.style.opacity='0';},2500);
+}
+
+// ── SAVE TO DRIVE via GET with encoded data (no CORS issues) ────────────────
+function postToDrive(jsonData) {
+  return saveStore();
+}
+
+// ── BOOT — load data before showing login ─────────────────────────────────
+let autoRefreshTimer = null;
+let currentRole = null;
+
+function startAutoRefresh(){
+  // Auto-pull from JSONBin every 15 seconds when logged in
+  stopAutoRefresh();
+  autoRefreshTimer = setInterval(async () => {
+    if(!currentRole) return;
+    const {binId, apiKey} = getBinConfig();
+    if(!binId || !apiKey) return;
+    try {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest?t=` + Date.now(), {
+        headers: {'X-Master-Key': apiKey, 'X-Bin-Meta': 'false', 'Cache-Control': 'no-cache'}
+      });
+      if(res.ok){
+        const remote = await res.json();
+        if(remote && remote.settings){
+          // Check if data actually changed before re-rendering
+          const remoteStr = JSON.stringify(remote);
+          const localStr  = JSON.stringify(store);
+          if(remoteStr !== localStr){
+            const merged = {...defaultStore,...remote,settings:{...defaultStore.settings,...(remote.settings||{})}};
+            Object.assign(store, merged);
+            try{localStorage.setItem(LS_KEY,JSON.stringify(store));}catch(e){}
+            // Re-render ALL pages for current role
+            if(currentRole === 'dir'){
+              renderDirDashboard();
+              renderStudents();
+              renderInterns();
+              renderClasses();
+              renderLinkedIn();
+            } else {
+              renderPhdDashboard();
+              renderAnalyses();
+              renderTasks();
+              renderDeadlines();
+            }
+            setSyncIndicator('online','● Updated!');
+            setTimeout(()=>setSyncIndicator('online','● Live'),2000);
+          } else {
+            setSyncIndicator('online','● Live');
+          }
+        }
+      }
+    } catch(e){ setSyncIndicator('offline','⚠ Offline'); }
+  }, 10000);
+}
+
+function stopAutoRefresh(){
+  if(autoRefreshTimer){ clearInterval(autoRefreshTimer); autoRefreshTimer=null; }
+}
+
+(async function boot(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('boot-screen').style.display = 'flex';
+  await loadStore();
+  document.getElementById('boot-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  if(syncStatus === 'online') setSyncIndicator('online','● Live');
+  else setSyncIndicator('offline','⚠ Offline mode');
+})();
+
+
+
+// ===== NOTIFICATION SYSTEM =====
+let notifQueue = [];
+let notifShown = new Set(); // track which notifications shown this session
+let notifSound = null;
+
+// Request browser notification permission
+async function requestNotifPermission(){
+  if('Notification' in window && Notification.permission === 'default'){
+    await Notification.requestPermission();
+  }
+}
+
+// Show in-app notification card
+function showNotifCard(title, body, type='info', duration=6000){
+  const panel = document.getElementById('notif-panel');
+  if(!panel) return;
+  const card = document.createElement('div');
+  card.className = 'notif-card ' + type;
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  card.innerHTML = `
+    <button class="notif-close" onclick="this.parentElement.remove()">✕</button>
+    <div class="notif-title">${title}</div>
+    <div class="notif-body">${body}</div>
+    <div class="notif-time">${now}</div>`;
+  panel.appendChild(card);
+  // Auto remove after duration
+  setTimeout(()=>{ try{panel.removeChild(card);}catch(e){} }, duration);
+}
+
+// Show desktop OS notification (works on Linux & Windows)
+function showDesktopNotif(title, body, type='info'){
+  if('Notification' in window && Notification.permission === 'granted'){
+    const icons = {urgent:'🔴', warning:'🟡', info:'🔵', success:'🟢'};
+    new Notification(icons[type] + ' BioResire — ' + title, {
+      body: body,
+      icon: '', // optional icon
+      tag: title, // prevents duplicate notifications
+      requireInteraction: type === 'urgent' // urgent stays until dismissed
+    });
+  }
+}
+
+// Play alert sound
+function playNotifSound(type){
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if(type === 'urgent'){ osc.frequency.value = 880; }
+    else if(type === 'warning'){ osc.frequency.value = 660; }
+    else { osc.frequency.value = 440; }
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+  } catch(e){}
+}
+
+// Check all deadlines and tasks and fire notifications
+function checkDeadlineNotifications(){
+  const now = new Date(); now.setHours(0,0,0,0);
+
+  // Check PhD deadlines
+  store.deadlines.forEach(d => {
+    if(!d.due) return;
+    const days = Math.ceil((new Date(d.due) - now) / 86400000);
+    const key = 'dl_' + d.id + '_' + days;
+    if(notifShown.has(key)) return;
+
+    if(days < 0){
+      // Past due
+      notifShown.add(key);
+      showNotifCard('⚠ Overdue Deadline', d.name + ' was due ' + Math.abs(days) + ' days ago', 'urgent', 10000);
+      showDesktopNotif('Overdue: ' + d.name, 'Was due ' + Math.abs(days) + ' days ago', 'urgent');
+      playNotifSound('urgent');
+    } else if(days === 0){
+      notifShown.add(key);
+      showNotifCard('🔴 DUE TODAY', d.name, 'urgent', 12000);
+      showDesktopNotif('DUE TODAY: ' + d.name, 'This deadline is today!', 'urgent');
+      playNotifSound('urgent');
+    } else if(days === 1){
+      notifShown.add(key);
+      showNotifCard('🟡 Due Tomorrow', d.name, 'warning', 8000);
+      showDesktopNotif('Due Tomorrow: ' + d.name, 'Deadline is tomorrow', 'warning');
+      playNotifSound('warning');
+    } else if(days === 3){
+      notifShown.add(key);
+      showNotifCard('📅 Due in 3 Days', d.name, 'warning', 6000);
+      showDesktopNotif('Due in 3 days: ' + d.name, d.name + ' is due in 3 days', 'warning');
+    } else if(days === 7){
+      notifShown.add(key);
+      showNotifCard('📌 Due in 1 Week', d.name, 'info', 5000);
+      showDesktopNotif('Due in 1 week: ' + d.name, d.name + ' is due in 7 days', 'info');
+    }
+  });
+
+  // Check urgent tasks
+  store.tasks.filter(t => !t.done && t.due).forEach(t => {
+    const days = Math.ceil((new Date(t.due) - now) / 86400000);
+    const key = 'task_' + t.id + '_' + days;
+    if(notifShown.has(key)) return;
+
+    if(days === 0 && t.priority === 'urgent'){
+      notifShown.add(key);
+      showNotifCard('🔴 Task Due Today', t.name, 'urgent', 10000);
+      showDesktopNotif('Task due today: ' + t.name, 'Urgent task due today!', 'urgent');
+      playNotifSound('urgent');
+    } else if(days < 0 && t.priority === 'urgent'){
+      notifShown.add(key);
+      showNotifCard('⚠ Overdue Task', t.name + ' (' + Math.abs(days) + 'd overdue)', 'urgent', 10000);
+      showDesktopNotif('Overdue task: ' + t.name, Math.abs(days) + ' days overdue', 'urgent');
+    }
+  });
+
+  // Check student overdue assignments
+  store.students.filter(s => s.status === 'overdue').forEach(s => {
+    const key = 'stu_overdue_' + s.id;
+    if(notifShown.has(key)) return;
+    notifShown.add(key);
+    showNotifCard('📋 Student Overdue', s.name + ' — ' + s.task, 'warning', 7000);
+  });
+}
+
+// Show morning summary modal
+function showMorningSummary(role){
+  const today = new Date();
+  document.getElementById('morning-date').textContent =
+    today.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  const urgentDeadlines = store.deadlines.filter(d=>{
+    const days = Math.ceil((new Date(d.due)-today)/86400000);
+    return days >= 0 && days <= 7;
+  }).sort((a,b)=>new Date(a.due)-new Date(b.due));
+
+  const urgentTasks = store.tasks.filter(t=>!t.done && t.priority==='urgent');
+  const overdueStudents = store.students.filter(s=>s.status==='overdue');
+  const pendingReviews = store.students.filter(s=>s.status==='review');
+
+  let html = '';
+
+  if(role === 'phd' || role === 'dir'){
+    if(urgentDeadlines.length > 0){
+      html += '<div class="morning-section"><div class="morning-section-title">Upcoming Deadlines</div>';
+      urgentDeadlines.forEach(d=>{
+        const days = Math.ceil((new Date(d.due)-today)/86400000);
+        const cls = days<=1?'urgent':days<=3?'warning':'ok';
+        const label = days===0?'TODAY':days===1?'TOMORROW':days+'d left';
+        html += `<div class="morning-item ${cls}"><span style="font-weight:700;min-width:80px">${label}</span>${d.name}</div>`;
+      });
+      html += '</div>';
+    }
+
+    if(urgentTasks.length > 0){
+      html += '<div class="morning-section"><div class="morning-section-title">Urgent Tasks</div>';
+      urgentTasks.slice(0,5).forEach(t=>{
+        const days = t.due ? Math.ceil((new Date(t.due)-today)/86400000) : null;
+        const cls = days !== null && days <= 1 ? 'urgent' : 'warning';
+        html += `<div class="morning-item ${cls}"><span>●</span>${t.name}</div>`;
+      });
+      html += '</div>';
+    }
+  }
+
+  if(role === 'dir'){
+    if(overdueStudents.length > 0){
+      html += '<div class="morning-section"><div class="morning-section-title">Overdue Students</div>';
+      overdueStudents.forEach(s=>{
+        html += `<div class="morning-item urgent"><span>⚠</span>${s.name} — ${s.task}</div>`;
+      });
+      html += '</div>';
+    }
+    if(pendingReviews.length > 0){
+      html += '<div class="morning-section"><div class="morning-section-title">Pending Reviews</div>';
+      pendingReviews.forEach(s=>{
+        html += `<div class="morning-item warning"><span>📋</span>${s.name} — ${s.task}</div>`;
+      });
+      html += '</div>';
+    }
+  }
+
+  if(!html){
+    html = '<div class="morning-item ok"><span>✅</span>All clear — no urgent items today!</div>';
+  }
+
+  document.getElementById('morning-content').innerHTML = html;
+  document.getElementById('morning-modal').classList.add('open');
+}
+
+// Initialize notifications when user logs in
+async function initNotifications(role){
+  await requestNotifPermission();
+  // Check immediately on login
+  checkDeadlineNotifications();
+  // Show morning summary
+  showMorningSummary(role);
+  // Check every 30 minutes
+  setInterval(checkDeadlineNotifications, 30 * 60 * 1000);
+}
+
+// ===== PIN LOGIC =====
+const pinInputs={dir:'',phd:''};
+
+// Mobile touch handler — prevents double firing on touch devices
+function e_pin(role, key, event){
+  event.preventDefault();
+  event.stopPropagation();
+  pinInput(role, key);
+}
+
+function pinInput(role,key){
+  if(key==='C'){pinInputs[role]='';}
+  else if(key==='X'){pinInputs[role]=pinInputs[role].slice(0,-1);}
+  else if(pinInputs[role].length<4){pinInputs[role]+=key;}
+  updatePinDots(role);
+  if(pinInputs[role].length===4){setTimeout(()=>checkPin(role),120);}
+}
+
+function updatePinDots(role){
+  document.querySelectorAll(`#${role}-dots .pin-dot`).forEach((d,i)=>d.classList.toggle('filled',i<pinInputs[role].length));
+}
+
+function checkPin(role){
+  const correct=role==='dir'?store.settings.dirPin:store.settings.phdPin;
+  if(pinInputs[role]===correct){
+    currentRole = role;
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    if(role==='dir'){document.getElementById('dir-app').style.display='block';document.getElementById('phd-app').style.display='none';initDirApp();}
+    else{document.getElementById('phd-app').style.display='block';document.getElementById('dir-app').style.display='none';initPhdApp();}
+    startAutoRefresh();
+    initNotifications(role);
+  } else {
+    document.getElementById(`${role}-error`).textContent='incorrect pin';
+    pinInputs[role]='';updatePinDots(role);
+    setTimeout(()=>{document.getElementById(`${role}-error`).textContent='';},1500);
+  }
+}
+
+function logout(){
+  stopAutoRefresh();
+  currentRole = null;
+  pinInputs.dir='';pinInputs.phd='';
+  updatePinDots('dir');updatePinDots('phd');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
+
+// ===== QUICK LINK HELPERS =====
+function openLink(url){window.open(url,'_blank');}
+function openGmail(role){
+  const email=role==='dir'?store.settings.gmailDir:store.settings.gmailPhd;
+  const url=email?`https://mail.google.com/mail/u/0/?authuser=${encodeURIComponent(email)}`:'https://mail.google.com/';
+  window.open(url,'_blank');
+}
+function openCalendarMain(){window.open(store.settings.calendarUrl||'https://calendar.google.com/','_blank');}
+function openLinkedIn(){window.open(store.settings.linkedinUrl||'https://www.linkedin.com/feed/','_blank');}
+function openWhatsApp(msg){
+  const n=store.settings.whatsapp;
+  window.open(n?`https://wa.me/${n}?text=${encodeURIComponent(msg)}`:'https://web.whatsapp.com/','_blank');
+}
+function composeGmail(to,subject,body){
+  window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
+}
+function addToCalendar(title,date){
+  if(date){
+    const d=date.replace(/-/g,'');
+    window.open(`https://calendar.google.com/calendar/r/eventedit?text=${encodeURIComponent(title)}&dates=${d}/${d}`,'_blank');
+  } else {
+    openCalendarMain();
+  }
+}
+
+// ===== UTILS =====
+function daysUntil(dateStr){
+  if(!dateStr)return null;
+  const d=new Date(dateStr);d.setHours(0,0,0,0);
+  const t=new Date();t.setHours(0,0,0,0);
+  return Math.ceil((d-t)/86400000);
+}
+function fmtDate(ds){if(!ds)return'';return new Date(ds).toLocaleDateString('en-IN',{day:'numeric',month:'short'});}
+function initials(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
+const AV=[{bg:'rgba(0,229,160,0.15)',color:'#00e5a0'},{bg:'rgba(255,211,61,0.15)',color:'#ffd93d'},{bg:'rgba(107,203,255,0.15)',color:'#6bcbff'},{bg:'rgba(255,107,107,0.15)',color:'#ff6b6b'},{bg:'rgba(199,125,255,0.15)',color:'#c77dff'},{bg:'rgba(112,224,0,0.15)',color:'#70e000'}];
+function av(i){return AV[i%AV.length];}
+function badge(s){const m={pending:'<span class="badge badge-pending">PENDING</span>',review:'<span class="badge badge-review">REVIEW</span>',done:'<span class="badge badge-done">DONE</span>',overdue:'<span class="badge badge-overdue">OVERDUE</span>',running:'<span class="badge badge-running">RUNNING</span>',planned:'<span class="badge badge-planned">PLANNED</span>'};return m[s]||`<span class="badge badge-pending">${s.toUpperCase()}</span>`;}
+const TC={'HiC':'#c77dff','ChIP-seq':'#48cae4','RNA-seq':'#fb8500','Multi-omics':'#70e000','ATAC-seq':'#ff6b6b','Other':'#7d8590'};
+
+// ===== DIRECTOR APP =====
+function initDirApp(){
+  document.getElementById('dir-date').textContent=today.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  renderDirDashboard();renderStudents();renderInterns();renderClasses();renderLinkedIn();
+}
+
+function renderDirDashboard(){
+  const pend=store.students.filter(s=>s.status==='pending').length;
+  const ovd=store.students.filter(s=>s.status==='overdue').length;
+  const liD=store.linkedin.filter(l=>l.status==='draft').length;
+  document.getElementById('dir-stats-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-card-accent" style="background:#00e5a0"></div><div class="stat-label">students</div><div class="stat-val">${store.students.length}</div><span class="stat-tag" style="background:rgba(0,229,160,.12);color:#00e5a0">${store.interns.length} interns</span></div>
+    <div class="stat-card"><div class="stat-card-accent" style="background:#ffd93d"></div><div class="stat-label">pending reviews</div><div class="stat-val">${pend}</div>${ovd?`<span class="stat-tag" style="background:rgba(255,107,107,.12);color:#ff6b6b">${ovd} overdue</span>`:'<span class="stat-tag" style="background:rgba(0,229,160,.1);color:#00e5a0">on track</span>'}</div>
+    <div class="stat-card"><div class="stat-card-accent" style="background:#6bcbff"></div><div class="stat-label">linkedin queue</div><div class="stat-val">${store.linkedin.length}</div><span class="stat-tag" style="background:rgba(107,203,255,.12);color:#6bcbff">${liD} drafts</span></div>
+    <div class="stat-card"><div class="stat-card-accent" style="background:#ff6b6b"></div><div class="stat-label">classes / week</div><div class="stat-val">${store.classes.length}</div><span class="stat-tag" style="background:rgba(255,211,61,.12);color:#ffd93d">next: ${store.classes[0]?.day||'—'}</span></div>`;
+
+  document.getElementById('dir-recent-students').innerHTML=store.students.slice(0,4).map((s,i)=>{
+    const a=av(i);
+    return`<div class="student-item"><div class="student-left"><div class="avatar" style="background:${a.bg};color:${a.color}">${initials(s.name)}</div><div><div class="s-name">${s.name}</div><div class="s-task">${s.task}</div></div></div><div class="s-right">${badge(s.status)}<div class="s-due">${fmtDate(s.due)}</div></div></div>`;
+  }).join('')||'<div class="empty-state"><div class="empty-icon">📋</div>No students yet</div>';
+
+  document.getElementById('dir-recent-li').innerHTML=store.linkedin.slice(0,3).map(l=>{
+    const cls=l.status==='draft'?'li-draft':l.status==='scheduled'?'li-scheduled':'li-published';
+    return`<div class="li-item"><div class="li-title">${l.title}</div><div class="li-meta"><span class="li-badge ${cls}">${l.status.toUpperCase()}</span>${l.date?' · '+fmtDate(l.date):''}</div></div>`;
+  }).join('');
+
+  document.getElementById('dir-class-preview').innerHTML=store.classes.map(c=>`
+    <div class="class-item"><div class="class-day" style="background:rgba(255,211,61,0.1);color:#ffd93d"><div class="class-day-name">${c.day}</div><div style="font-size:9px">${c.time}</div></div>
+    <div><div class="class-name">${c.name}</div><div class="class-meta">${c.loc}</div></div></div>`).join('');
+}
+
+function renderStudents(){
+  document.getElementById('student-count-label').textContent=`${store.students.length} students total`;
+  document.getElementById('students-list').innerHTML=store.students.length?store.students.map((s,i)=>{
+    const a=av(i);const days=daysUntil(s.due);const dl=days!==null?(days<0?`${Math.abs(days)}d ago`:`in ${days}d`):'';
+    const emailBtn=`<button class="icon-btn" title="Email student" onclick="composeGmail('${s.email||''}','Assignment: ${s.task}','Hi ${s.name},\\n\\n')">✉ Email</button>`;
+    const waBtn=`<button class="icon-btn" title="WhatsApp" onclick="openWhatsApp('Hi ${s.name}, quick update on: ${s.task}')">💬</button>`;
+    const calBtn=`<button class="icon-btn" title="Add to Calendar" onclick="addToCalendar('Review: ${s.name}','${s.due}')">📅</button>`;
+    return`<div class="student-item" id="stu-${s.id}">
+      <div class="student-left"><div class="avatar" style="background:${a.bg};color:${a.color}">${initials(s.name)}</div>
+      <div><div class="s-name">${s.name}${s.email?` <span style="font-size:9px;color:#667799">${s.email}</span>`:''}</div><div class="s-task">${s.task}</div>
+      <div style="display:flex;gap:4px;margin-top:5px">${emailBtn}${waBtn}${calBtn}</div></div></div>
+      <div class="s-right">${badge(s.status)}<div class="s-due">${fmtDate(s.due)} ${dl}</div></div>
+      <button class="del-btn" onclick="delItem('students',${s.id},'renderStudents','renderDirDashboard')">✕</button>
+    </div>`;
+  }).join(''):'<div class="empty-state"><div class="empty-icon">🎓</div>No students added yet</div>';
+}
+
+function renderInterns(){
+  document.getElementById('intern-count-label').textContent=`${store.interns.length} active interns`;
+  const cols=['#00e5a0','#6bcbff','#ffd93d','#ff6b6b','#c77dff'];
+  document.getElementById('intern-grid').innerHTML=store.interns.length?store.interns.map((n,i)=>{
+    const pct=Math.round((n.current/n.total)*100);const col=cols[i%cols.length];
+    return`<div class="pipeline-card" id="int-${n.id}">
+      <div class="pipeline-label" style="color:${col}">internship</div>
+      <div class="pipeline-name">${n.name}</div><div class="pipeline-tool">${n.project}</div>
+      <div class="pipeline-status-row"><div class="pipeline-pct" style="color:${col}">${pct}%</div><span class="pill" style="background:${col}22;color:${col}">Wk ${n.current}/${n.total}</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div style="display:flex;gap:5px;margin-top:10px">
+        <button class="icon-btn" onclick="composeGmail('${n.email||''}','Internship update — Week ${n.current}','Hi ${n.name},\\n\\n')">✉ Email</button>
+        <button class="icon-btn" onclick="addToCalendar('Check-in: ${n.name}','')">📅 Schedule</button>
+      </div>
+      <button class="del-btn" style="position:absolute;top:12px;right:12px" onclick="delItem('interns',${n.id},'renderInterns','renderDirDashboard')">✕</button>
+    </div>`;
+  }).join(''):'<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔬</div>No interns yet</div>';
+}
+
+function renderClasses(){
+  const DC={Mon:'#00e5a0',Tue:'#6bcbff',Wed:'#ffd93d',Thu:'#ff6b6b',Fri:'#c77dff',Sat:'#fb8500'};
+  document.getElementById('classes-list').innerHTML=store.classes.map(c=>{
+    const col=DC[c.day]||'#555';
+    const joinBtn=c.meet?`<button class="icon-btn" onclick="openLink('${c.meet}')">🔗 Join</button>`:'';
+    return`<div class="class-item" id="cls-${c.id}">
+      <div class="class-day" style="background:${col}18;color:${col}"><div class="class-day-name">${c.day}</div><div style="font-size:9px">${c.time}</div></div>
+      <div style="flex:1"><div class="class-name">${c.name}</div><div class="class-meta">${c.loc}</div>
+      <div style="display:flex;gap:4px;margin-top:5px">${joinBtn}<button class="icon-btn" onclick="addToCalendar('${c.name}','')">📅</button></div></div>
+      <button class="del-btn" onclick="delItem('classes',${c.id},'renderClasses')">✕</button>
+    </div>`;
+  }).join('');
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat'];
+  document.getElementById('weekly-overview').innerHTML=`<div style="display:grid;grid-template-columns:50px 1fr;gap:8px">
+    ${days.map(day=>{const cls=store.classes.filter(c=>c.day===day);const col=DC[day]||'#555';
+    return`<div style="font-size:11px;color:${col};font-weight:700;padding-top:10px">${day}</div>
+    <div>${cls.length?cls.map(c=>`<div style="background:${col}12;border-left:2px solid ${col};border-radius:0 6px 6px 0;padding:5px 10px;margin-bottom:4px">
+      <div style="font-size:12px;color:#f0f4ff">${c.name}</div><div style="font-size:10px;color:#8899bb">${c.time} · ${c.loc}</div></div>`).join('')
+    :'<div style="font-size:10px;color:#333;padding:10px 0">—</div>'}</div>`;}).join('')}</div>`;
+}
+
+function renderLinkedIn(){
+  const byStatus=s=>store.linkedin.filter(l=>l.status===s);
+  const liCard=(l,cls)=>`<div class="li-item" id="li-${l.id}">
+    <div class="li-title">${l.title}</div>
+    <div class="li-meta"><span class="li-badge ${cls}">${l.status.toUpperCase()}</span>${l.date?' · '+fmtDate(l.date):''}</div>
+    ${l.notes?`<div style="font-size:10px;color:#8899bb;margin-top:5px;line-height:1.5">${l.notes}</div>`:''}
+    <div style="display:flex;gap:5px;margin-top:8px">
+      <button class="icon-btn" onclick="openLinkedIn()">💼 Open LinkedIn</button>
+      ${l.date?`<button class="icon-btn" onclick="addToCalendar('Post: ${l.title}','${l.date}')">📅</button>`:''}
+    </div>
+    <button class="del-btn li-del" onclick="delItem('linkedin',${l.id},'renderLinkedIn','renderDirDashboard')">✕</button>
+  </div>`;
+  const empty='<div class="empty-state"><div class="empty-icon" style="font-size:20px">📝</div>Empty</div>';
+  document.getElementById('li-drafts').innerHTML=byStatus('draft').map(l=>liCard(l,'li-draft')).join('')||empty;
+  document.getElementById('li-scheduled').innerHTML=byStatus('scheduled').map(l=>liCard(l,'li-scheduled')).join('')||empty;
+  document.getElementById('li-published').innerHTML=byStatus('published').map(l=>liCard(l,'li-published')).join('')||empty;
+}
+
+function addStudent(){
+  const name=document.getElementById('s-name').value.trim();const task=document.getElementById('s-task').value.trim();
+  const due=document.getElementById('s-due').value;const status=document.getElementById('s-status').value;
+  const email=document.getElementById('s-email').value.trim();
+  if(!name)return;
+  store.students.push({id:Date.now(),name,task,due,status,email});
+  saveStore();closeModal('student-modal');
+  ['s-name','s-task','s-due','s-email'].forEach(id=>document.getElementById(id).value='');
+  renderStudents();renderDirDashboard();
+}
+
+function addIntern(){
+  const name=document.getElementById('i-name').value.trim();const project=document.getElementById('i-project').value.trim();
+  const total=parseInt(document.getElementById('i-total').value)||12;const current=parseInt(document.getElementById('i-current').value)||1;
+  const email=document.getElementById('i-email').value.trim();
+  if(!name)return;
+  store.interns.push({id:Date.now(),name,project,total,current,email});
+  saveStore();closeModal('intern-modal');
+  ['i-name','i-project','i-email'].forEach(id=>document.getElementById(id).value='');
+  renderInterns();renderDirDashboard();
+}
+
+function addClass(){
+  const name=document.getElementById('c-name').value.trim();const day=document.getElementById('c-day').value;
+  const time=document.getElementById('c-time').value;const loc=document.getElementById('c-loc').value.trim();
+  const meet=document.getElementById('c-meet').value.trim();
+  if(!name)return;
+  store.classes.push({id:Date.now(),name,day,time,loc,meet});
+  saveStore();closeModal('class-modal');
+  ['c-name','c-time','c-loc','c-meet'].forEach(id=>document.getElementById(id).value='');
+  renderClasses();renderDirDashboard();
+}
+
+function addLinkedIn(){
+  const title=document.getElementById('li-title').value.trim();const notes=document.getElementById('li-notes').value.trim();
+  const status=document.getElementById('li-status').value;const date=document.getElementById('li-date').value;
+  if(!title)return;
+  store.linkedin.push({id:Date.now(),title,notes,status,date});
+  saveStore();closeModal('li-modal');
+  ['li-title','li-notes','li-date'].forEach(id=>document.getElementById(id).value='');
+  renderLinkedIn();renderDirDashboard();
+}
+
+// ===== PHD APP =====
+function initPhdApp(){
+  document.getElementById('phd-date').textContent=today.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  renderPhdDashboard();renderAnalyses();renderTasks();renderDeadlines();renderHeatmap();
+}
+
+function renderPhdDashboard(){
+  const running=store.analyses.filter(a=>a.status==='running').length;
+  const done=store.analyses.filter(a=>a.status==='done').length;
+  const pend=store.tasks.filter(t=>!t.done).length;
+  const nextDl=store.deadlines.slice().sort((a,b)=>new Date(a.due)-new Date(b.due))[0];
+  const dtn=nextDl?daysUntil(nextDl.due):null;
+  document.getElementById('phd-stats-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-card-accent" style="background:#c77dff"></div><div class="stat-label">analyses</div><div class="stat-val">${store.analyses.length}</div><span class="stat-tag" style="background:rgba(199,125,255,.12);color:#c77dff">${running} running</span></div>
+    <div class="stat-card"><div class="stat-card-accent" style="background:#fb8500"></div><div class="stat-label">next deadline</div><div class="stat-val">${dtn!==null?dtn+'d':'—'}</div><span class="stat-tag" style="background:rgba(251,133,0,.12);color:#fb8500">${nextDl?nextDl.name.slice(0,16)+'...':'none'}</span></div>
+    <div class="stat-card"><div class="stat-card-accent" style="background:#48cae4"></div><div class="stat-label">pipelines done</div><div class="stat-val">${done}</div><span class="stat-tag" style="background:rgba(72,202,228,.12);color:#48cae4">${store.analyses.length-done} active</span></div>
+    <div class="stat-card"><div class="stat-card-accent" style="background:#70e000"></div><div class="stat-label">open tasks</div><div class="stat-val">${pend}</div><span class="stat-tag" style="background:rgba(112,224,0,.12);color:#70e000">${store.tasks.filter(t=>t.done).length} done</span></div>`;
+
+  document.getElementById('phd-recent-analyses').innerHTML=store.analyses.slice(0,3).map(a=>{
+    const col=TC[a.type]||'#888';
+    return`<div class="analysis-item"><div class="analysis-top"><div><div class="analysis-name">${a.name}</div><div class="analysis-type" style="color:${col}">${a.type} · ${a.tool}</div></div>${badge(a.status)}</div>
+    <div style="display:flex;align-items:center;gap:10px"><div class="progress-track" style="flex:1"><div class="progress-fill" style="width:${a.pct}%;background:${col}"></div></div><div style="font-size:10px;color:${col}">${a.pct}%</div></div></div>`;
+  }).join('');
+
+  document.getElementById('phd-recent-deadlines').innerHTML=store.deadlines.slice().sort((a,b)=>new Date(a.due)-new Date(b.due)).slice(0,3).map(d=>{
+    const days=daysUntil(d.due);const col=days!==null&&days<=5?'#ff6b6b':days!==null&&days<=14?'#ffd93d':'#00e5a0';
+    return`<div class="tl-item"><div class="tl-marker ${days!==null&&days<=7?'active':''}" style="background:${col}"></div>
+    <div class="tl-content" style="flex:1"><div class="tl-title">${d.name}</div><div class="tl-date">${fmtDate(d.due)}</div></div>
+    <div class="tl-days" style="color:${col}">${days!==null?days+'d':''}</div></div>`;
+  }).join('');
+
+  document.getElementById('phd-recent-tasks').innerHTML=store.tasks.slice(0,5).map(t=>renderTaskHTML(t)).join('');
+}
+
+function renderTaskHTML(t){
+  const tagCls=t.priority==='urgent'?'tag-urgent':t.priority==='normal'?'tag-normal':'tag-ok';
+  const calBtn=t.due?`<button class="icon-btn" onclick="addToCalendar('${t.name}','${t.due}')" style="font-size:9px;padding:2px 5px">📅</button>`:'';
+  const mailBtn=`<button class="icon-btn" onclick="composeGmail('${store.settings.gmailPhd||''}','Task reminder: ${t.name}','Due: ${t.due}\\n\\n')" style="font-size:9px;padding:2px 5px">✉</button>`;
+  return`<div class="task-item" id="task-${t.id}">
+    <div class="task-checkbox ${t.done?'checked':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</div>
+    <div class="task-content">
+      <div class="task-text ${t.done?'done':''}">${t.name}</div>
+      <div class="task-footer"><span class="task-due-tag ${tagCls}">${t.priority.toUpperCase()}</span><span style="font-size:10px;color:#8899bb">${fmtDate(t.due)}</span>${calBtn}${mailBtn}</div>
+    </div>
+    <button class="del-btn" onclick="delItem('tasks',${t.id},'renderTasks','renderPhdDashboard')">✕</button>
+  </div>`;
+}
+
+function renderAnalyses(){
+  document.getElementById('analyses-grid').innerHTML=store.analyses.map(a=>{
+    const col=TC[a.type]||'#888';
+    const dot=a.status==='running'?`<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${col};animation:pulse 2s infinite;margin-right:4px"></span>`:'';
+    return`<div class="pipeline-card" id="ana-${a.id}" style="border-color:${col}22">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${col};border-radius:14px 14px 0 0"></div>
+      <div class="pipeline-label" style="color:${col}">${a.type}</div>
+      <div class="pipeline-name">${a.name}</div><div class="pipeline-tool">${a.tool}</div>
+      <div class="pipeline-status-row"><div class="pipeline-pct" style="color:${col}">${a.pct}%</div><span class="pill" style="background:${col}18;color:${col}">${dot}${a.status.toUpperCase()}</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${a.pct}%;background:${col}"></div></div>
+      <div style="display:flex;gap:5px;margin-top:10px">
+        <button class="icon-btn" onclick="composeGmail('${store.settings.gmailPhd||''}','Progress: ${a.name}','Progress: ${a.pct}%\\nTool: ${a.tool}\\n')">✉</button>
+        <button class="icon-btn" onclick="addToCalendar('Checkpoint: ${a.name}','')">📅</button>
+      </div>
+      <button class="del-btn" style="position:absolute;top:14px;right:12px" onclick="delItem('analyses',${a.id},'renderAnalyses','renderPhdDashboard')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function renderTasks(){
+  const open=store.tasks.filter(t=>!t.done);const done=store.tasks.filter(t=>t.done);
+  document.getElementById('task-count-label').textContent=`${open.length} open · ${done.length} completed`;
+  document.getElementById('tasks-list').innerHTML=(open.length+done.length)?[...open,...done].map(t=>renderTaskHTML(t)).join(''):'<div class="empty-state"><div class="empty-icon">✅</div>No tasks yet</div>';
+}
+
+function renderDeadlines(){
+  const catColors={thesis:'#c77dff',conference:'#fb8500',publication:'#48cae4',meeting:'#00e5a0',other:'#555'};
+  document.getElementById('deadlines-list').innerHTML=store.deadlines.slice().sort((a,b)=>new Date(a.due)-new Date(b.due)).map(d=>{
+    const days=daysUntil(d.due);const col=days!==null&&days<=5?'#ff6b6b':days!==null&&days<=14?'#ffd93d':catColors[d.cat]||'#555';
+    const active=days!==null&&days<=7;
+    return`<div class="tl-item" id="dl-${d.id}">
+      <div class="tl-marker ${active?'active':''}" style="background:${col}"></div>
+      <div class="tl-content" style="flex:1"><div class="tl-title">${d.name}</div>
+      <div class="tl-date">${fmtDate(d.due)}<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:${catColors[d.cat]}20;color:${catColors[d.cat]}">${d.cat}</span>
+        <button class="icon-btn" onclick="composeGmail('${store.settings.gmailPhd||''}','Reminder: ${d.name}','Due: ${d.due}\\n')" style="font-size:9px;padding:1px 5px">✉</button>
+        <button class="icon-btn" onclick="addToCalendar('${d.name}','${d.due}')" style="font-size:9px;padding:1px 5px">📅</button>
+      </div></div>
+      <div class="tl-days" style="color:${col}">${days!==null?(days<0?'past':days+'d'):''}</div>
+      <button class="del-btn" onclick="delItem('deadlines',${d.id},'renderDeadlines','renderPhdDashboard')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function renderHeatmap(){
+  document.getElementById('heatmap').innerHTML=Array.from({length:84},()=>Math.random()).map(v=>{
+    const op=v<0.3?0.05:v<0.5?0.15:v<0.7?0.35:v<0.85?0.6:0.9;
+    return`<div class="hm-cell" style="background:${v<0.5?'#c77dff':'#48cae4'};opacity:${op}" title="${Math.round(v*8)} hrs"></div>`;
+  }).join('');
+}
+
+function toggleTask(id){
+  const t=store.tasks.find(t=>t.id===id);
+  if(t){t.done=!t.done;saveStore();renderTasks();renderPhdDashboard();}
+}
+
+function addAnalysis(){
+  const name=document.getElementById('an-name').value.trim();const type=document.getElementById('an-type').value;
+  const tool=document.getElementById('an-tool').value.trim();const pct=parseInt(document.getElementById('an-pct').value)||0;
+  const status=document.getElementById('an-status').value;
+  if(!name)return;
+  store.analyses.push({id:Date.now(),name,type,tool,pct,status});
+  saveStore();closeModal('analysis-modal');
+  ['an-name','an-tool'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('an-pct').value='0';
+  renderAnalyses();renderPhdDashboard();
+}
+
+function addTask(){
+  const name=document.getElementById('t-name').value.trim();const due=document.getElementById('t-due').value;
+  const priority=document.getElementById('t-priority').value;
+  if(!name)return;
+  store.tasks.push({id:Date.now(),name,due,priority,done:false});
+  saveStore();closeModal('task-modal');
+  ['t-name','t-due'].forEach(id=>document.getElementById(id).value='');
+  renderTasks();renderPhdDashboard();
+}
+
+function addDeadline(){
+  const name=document.getElementById('d-name').value.trim();const due=document.getElementById('d-due').value;
+  const cat=document.getElementById('d-cat').value;
+  if(!name)return;
+  store.deadlines.push({id:Date.now(),name,due,cat});
+  saveStore();closeModal('deadline-modal');
+  ['d-name','d-due'].forEach(id=>document.getElementById(id).value='');
+  renderDeadlines();renderPhdDashboard();
+}
+
+// ===== SETTINGS =====
+function openSettings(){
+  const s=store.settings;
+  document.getElementById('set-dir-pin').value=s.dirPin||'';
+  document.getElementById('set-phd-pin').value=s.phdPin||'';
+  document.getElementById('set-gmail-dir').value=s.gmailDir||'';
+  document.getElementById('set-gmail-phd').value=s.gmailPhd||'';
+  document.getElementById('set-wa').value=s.whatsapp||'';
+  document.getElementById('set-li-url').value=s.linkedinUrl||'https://www.linkedin.com/feed/';
+  document.getElementById('set-cal-url').value=s.calendarUrl||'https://calendar.google.com/';
+  document.getElementById('set-bin-id').value=s.binId||'';
+  document.getElementById('set-bin-key').value=s.binApiKey||'';
+  openModal('settings-modal');
+}
+
+function saveSettings(){
+  const dp=document.getElementById('set-dir-pin').value.trim();
+  const pp=document.getElementById('set-phd-pin').value.trim();
+  if(!/^\d{4}$/.test(dp)){alert('Director PIN must be exactly 4 digits');return;}
+  if(!/^\d{4}$/.test(pp)){alert('PhD PIN must be exactly 4 digits');return;}
+  store.settings.dirPin=dp;store.settings.phdPin=pp;
+  store.settings.gmailDir=document.getElementById('set-gmail-dir').value.trim();
+  store.settings.gmailPhd=document.getElementById('set-gmail-phd').value.trim();
+  store.settings.whatsapp=document.getElementById('set-wa').value.trim().replace(/\D/g,'');
+  store.settings.linkedinUrl=document.getElementById('set-li-url').value.trim()||'https://www.linkedin.com/feed/';
+  store.settings.calendarUrl=document.getElementById('set-cal-url').value.trim()||'https://calendar.google.com/';
+  store.settings.binId=document.getElementById('set-bin-id').value.trim();
+  store.settings.binApiKey=document.getElementById('set-bin-key').value.trim();
+  saveStore();closeModal('settings-modal');
+  // Reload from bin with new credentials
+  setTimeout(()=>loadStore().then(()=>{ if(syncStatus==='online') alert('✓ Sync connected! Your data is now shared across all devices.'); }),1500);
+  alert('Settings saved! ✓');
+}
+
+function resetAllData(){
+  if(confirm('Delete ALL data and reset to defaults on ALL devices? This cannot be undone.')){
+    try{ localStorage.removeItem(LS_KEY); }catch(e){}
+    // Also clear Drive
+    Object.assign(store, JSON.parse(JSON.stringify(defaultStore)));
+    fetch(SYNC_URL, {method:'POST', body:JSON.stringify(store), headers:{'Content-Type':'text/plain'}})
+      .then(()=>location.reload()).catch(()=>location.reload());
+  }
+}
+
+// ===== BACKUP & RESTORE =====
+function exportBackup(){
+  try {
+    const data = JSON.stringify(store, null, 2);
+    const blob = new Blob([data], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const date = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = 'bioresire_backup_' + date + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    const msg = document.getElementById('backup-msg');
+    if(msg){ msg.style.color='#00e5a0'; msg.textContent='✓ Backup downloaded successfully — ' + date; }
+  } catch(e) {
+    alert('Export failed: ' + e.message);
+  }
+}
+
+function importBackup(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      const parsed = JSON.parse(e.target.result);
+      // Validate it's a bioresire backup
+      if(!parsed.students || !parsed.analyses || !parsed.tasks){
+        throw new Error('Invalid backup file — not a BioResire backup.');
+      }
+      if(!confirm('This will replace ALL current data with the backup. Continue?')) return;
+      // Merge settings carefully
+      const merged = {...defaultStore, ...parsed, settings:{...defaultStore.settings,...(parsed.settings||{})}};
+      Object.assign(store, merged);
+      saveStore();
+      const msg = document.getElementById('backup-msg');
+      if(msg){ msg.style.color='#6bcbff'; msg.textContent='✓ Data restored successfully! Refreshing...'; }
+      setTimeout(()=>location.reload(), 1200);
+    } catch(err) {
+      const msg = document.getElementById('backup-msg');
+      if(msg){ msg.style.color='#ff6b6b'; msg.textContent='✗ Error: ' + err.message; }
+    }
+  };
+  reader.readAsText(file);
+  // Reset file input so same file can be re-imported
+  event.target.value = '';
+}
+
+// ===== SHARED =====
+function delItem(collection,id,...renders){
+  store[collection]=store[collection].filter(x=>x.id!==id);
+  saveStore();renders.forEach(r=>window[r]&&window[r]());
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+
+function dirPage(page,btn){
+  document.querySelectorAll('#dir-app .page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#dir-app .tb-navbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('dir-'+page).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+function phdPage(page,btn){
+  document.querySelectorAll('#phd-app .page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#phd-app .tb-navbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('phd-'+page).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+// ===== KEYBOARD PIN SUPPORT =====
+// Also supports typing PIN with physical keyboard
+let activeRole = null;
+document.addEventListener('keydown', function(e) {
+  const ls = document.getElementById('login-screen');
+  if (!ls || ls.style.display === 'none') return;
+  // Detect which card is hovered or use last clicked
+  if (e.key >= '0' && e.key <= '9') {
+    if (activeRole) pinInput(activeRole, parseInt(e.key));
+  } else if (e.key === 'Backspace') {
+    if (activeRole) pinInput(activeRole, 'X');
+  } else if (e.key === 'Escape') {
+    if (activeRole) pinInput(activeRole, 'C');
+  }
+});
+
+// Track which card the user is interacting with
+document.querySelector('.dir-card').addEventListener('mouseenter', () => activeRole = 'dir');
+document.querySelector('.phd-card').addEventListener('mouseenter', () => activeRole = 'phd');
+document.querySelector('.dir-card').addEventListener('click', () => activeRole = 'dir');
+document.querySelector('.phd-card').addEventListener('click', () => activeRole = 'phd');
+
+// Make sure all pin buttons work — bind events directly as backup
+document.querySelectorAll('.pin-btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const card = btn.closest('.login-card');
+    const role = card.classList.contains('dir-card') ? 'dir' : 'phd';
+    activeRole = role;
+    const txt = btn.textContent.trim();
+    if (txt === 'CLR') pinInput(role, 'C');
+    else if (txt === '⌫') pinInput(role, 'X');
+    else pinInput(role, parseInt(txt));
+  });
+});
+</script>
+</body>
+</html>
